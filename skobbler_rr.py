@@ -212,7 +212,7 @@ class skob:
             self.dlg.checkBox_2.setCheckState(False)            
         return
 
-    def selectCoord(self, point): #, button
+    def selectCoord(self, point):
         """ Gets coordinates from mouse click and reprojects it to 4326 if needed. Returns geocoded address"""
         ## Get mouse click coordinates
         self.pntGeom = QgsGeometry.fromPoint(point)
@@ -238,8 +238,11 @@ class skob:
         ## Get and parse XML
         tree = ET.parse(urllib2.urlopen(nominatimString))
         root = tree.getroot()
-        for layer in root.findall('result'):
-            adres = layer.text
+        for node in root.findall('result'):
+            adres = node.text
+        else:
+            for node in root.findall('error'):
+                adres = node.text
         ## Write the address in the text box
         self.dlg.textBrowser.setPlainText(adres)
 
