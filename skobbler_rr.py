@@ -20,10 +20,10 @@
  *                                                                         *
  ***************************************************************************/
 """
-#from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QVariant, pyqtSignal, QObject
-from PyQt4.QtCore import *
-# from PyQt4.QtGui import QAction, QIcon
-from PyQt4.QtGui import *
+from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QVariant, pyqtSignal, QObject, SIGNAL
+# from PyQt4.QtCore import *
+from PyQt4.QtGui import QAction, QIcon
+# from PyQt4.QtGui import *
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
@@ -31,13 +31,12 @@ from skobbler_rr_dialog import skobDialog
 import os.path
 ## Additional
 from config import *
-import urllib, json
-# from qgis.core import QgsField, QgsVectorLayer, QgsFeature, QgsGeometry, QgsPoint, QgsMapLayerRegistry, QgsCoordinateReferenceSystem
-from qgis.core import *
-# from qgis.gui import QgsMapTool, QgsMapCanvas, QgsMapToolEmitPoint
-from qgis.gui import *
+import urllib, urllib2, json
+from qgis.core import QgsField, QgsVectorLayer, QgsFeature, QgsGeometry, QgsPoint, QgsMapLayerRegistry, QgsCoordinateReferenceSystem, QgsCoordinateTransform
+# from qgis.core import *
+from qgis.gui import QgsMapTool, QgsMapCanvas, QgsMapToolEmitPoint, QgsMessageBar
+# from qgis.gui import *
 import xml.etree.ElementTree as ET
-import urllib2
 
 class skob:
     """QGIS Plugin Implementation."""
@@ -301,7 +300,11 @@ class skob:
         ## Get the data
         response = urllib.urlopen(queryString)
         data = json.loads(response.read())
-        self.coords = data['realReach']['gpsPoints']
+        print queryString
+        try:
+            self.coords = data['realReach']['gpsPoints']
+        except KeyError:
+            return 'keyerror'
 
     def createShapefile(self):
         """ Create shapefile from returned list of points """
@@ -361,8 +364,9 @@ class skob:
 
                 self.createURL()
                 
-                self.requestAPI()
-
-                self.createShapefile()
+                if self.requestAPI() != 'keyerror':
+                    self.createShapefile()
+                else:
+                    self.iface.messageBar().pushMessage("Error", "Invalid starting point - no roads around", level=QgsMessageBar.WARNING, duration=5)
             else:
                 pass
