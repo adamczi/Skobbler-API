@@ -308,8 +308,8 @@ class skob:
         pr = vl.dataProvider()
 
         ## Add feature name in attribute table
-            pr.addAttributes([QgsField("name", QVariant.String)])
-            vl.updateFields()
+        pr.addAttributes([QgsField("name", QVariant.String)])
+        vl.updateFields()
         
         ## Create geometry from points
         points = []
