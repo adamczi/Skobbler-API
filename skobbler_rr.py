@@ -21,9 +21,7 @@
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QVariant, pyqtSignal, QObject, SIGNAL
-# from PyQt4.QtCore import *
 from PyQt4.QtGui import QAction, QIcon
-# from PyQt4.QtGui import *
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
@@ -33,9 +31,7 @@ import os.path
 from config import *
 import urllib, urllib2, json
 from qgis.core import QgsField, QgsVectorLayer, QgsFeature, QgsGeometry, QgsPoint, QgsMapLayerRegistry, QgsCoordinateReferenceSystem, QgsCoordinateTransform
-# from qgis.core import *
 from qgis.gui import QgsMapTool, QgsMapCanvas, QgsMapToolEmitPoint, QgsMessageBar
-# from qgis.gui import *
 import xml.etree.ElementTree as ET
 
 class skob:
@@ -269,13 +265,13 @@ class skob:
 
         ## Units
         if self.dlg.radioButton_4.isChecked():
-            unit = 'meter'
+            self.unit = 'meter'
             ## Distance value
-            dist = self.dlg.spinBox.value()
+            self.dist = self.dlg.spinBox.value()
         else:
-            unit = 'sec'
+            self.unit = 'sec'
             ## Distance value
-            dist = self.dlg.spinBox.value()*60       
+            self.dist = self.dlg.spinBox.value()*60       
 
         startPoint = str(self.selectedCoords.y())+','+str(self.selectedCoords.x())
 
@@ -285,18 +281,19 @@ class skob:
                                             transport
                                             + transportation,
                                             distance
-                                            + str(dist),
+                                            + str(self.dist),
                                             units
-                                            + unit,
+                                            + self.unit,
                                             toll,
                                             highways,
                                             nonReachable,
                                             response_type))
-        return self.urlWithParams
+        self.createURLlist = (self.urlWithParams, self.dist, self.unit)
+        return self.createURLlist
 
     def requestAPI(self):
         """ Send the request """
-        queryString = self.createURL()
+        queryString, dist, unit = self.createURL()
         ## Get the data
         response = urllib.urlopen(queryString)
         data = json.loads(response.read())
@@ -308,7 +305,9 @@ class skob:
 
     def createShapefile(self):
         """ Create shapefile from returned list of points """
-        vl = QgsVectorLayer("Polygon?crs=EPSG:4326", "temporary_points", "memory")
+        queryString, dist, unit = self.createURL() # to get params from URL
+        name = "temp_"+str(dist)+'_'+unit
+        vl = QgsVectorLayer("Polygon?crs=EPSG:4326", name, "memory")
         pr = vl.dataProvider()
 
         ## Add feature name in attribute table
