@@ -45,9 +45,6 @@ class skob:
             application at run time.
         :type iface: QgsInterface
         """
-        ## TODO Counter
-        #self.count = 0
-
         # Save reference to the QGIS interface
         self.iface = iface
         # initialize plugin directory
@@ -288,6 +285,7 @@ class skob:
                                             highways,
                                             nonReachable,
                                             response_type))
+
         self.createURLlist = (self.urlWithParams, self.dist, self.unit)
         return self.createURLlist
 
@@ -297,7 +295,6 @@ class skob:
         ## Get the data
         response = urllib.urlopen(queryString)
         data = json.loads(response.read())
-        print queryString
         try:
             self.coords = data['realReach']['gpsPoints']
         except KeyError:
@@ -311,15 +308,15 @@ class skob:
         pr = vl.dataProvider()
 
         ## Add feature name in attribute table
-        pr.addAttributes([QgsField("name", QVariant.String)])
-        vl.updateFields()
+            pr.addAttributes([QgsField("name", QVariant.String)])
+            vl.updateFields()
         
         ## Create geometry from points
         points = []
         x = [self.coords[i] for i in range(1, len(self.coords), 2)]
         y = [self.coords[i] for i in range(0, len(self.coords), 2)]
         
-        for i, j in zip(y[5:], x[5:]):
+        for i, j in zip(y[4:], x[4:]):
             points.append(QgsPoint(i,j))
 
         fet = QgsFeature()
@@ -331,8 +328,9 @@ class skob:
 
         vl.updateExtents()
 
-        ## Add prepared layer
+        ## Add prepared layer with transparency
         QgsMapLayerRegistry.instance().addMapLayer(vl)
+        vl.setLayerTransparency(50)
 
     def run(self):
         """Run method that performs all the real work"""
@@ -347,9 +345,6 @@ class skob:
 
         self.dlg.radioButton_3.toggled.connect(self.checkBoxes)
 
-        ## TODO - counter to add polygon features to existing layer instead of creating a new one
-        #print 'count ',self.count
-
         ## show the dialog
         self.dlg.show()
 
@@ -359,7 +354,6 @@ class skob:
         ## See if OK was pressed
         if result:
             if self.dlg.textBrowser.toPlainText() != '':
-                #self.count+=1
 
                 self.createURL()
                 
