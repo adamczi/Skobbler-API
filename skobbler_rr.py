@@ -3,7 +3,7 @@
 /***************************************************************************
  skob
                                  A QGIS plugin
- This plugin uses Skobbler RealReach API
+ This plugin makes use of Skobbler RealReach API
                               -------------------
         begin                : 2016-08-10
         git sha              : $Format:%H$
@@ -28,7 +28,7 @@ import resources
 from skobbler_rr_dialog import skobDialog
 import os.path
 ## Additional
-from config import *
+from utils import *
 import urllib, urllib2, json
 from qgis.core import QgsField, QgsVectorLayer, QgsFeature, QgsGeometry, QgsPoint, QgsMapLayerRegistry, QgsCoordinateReferenceSystem, QgsCoordinateTransform
 from qgis.gui import QgsMapTool, QgsMapCanvas, QgsMapToolEmitPoint, QgsMessageBar
@@ -219,18 +219,13 @@ class skob:
             self.selectedCoords = xform.transform(self.pntGeom.asPoint())
 
         ## Get geocoded addres 
-        latitude = self.selectedCoords.y()
-        longitude = self.selectedCoords.x()
-        nominatimString = separator.join((url_nominatim,
-                                        lat
-                                        + str(latitude),
-                                        lon
-                                        + str(longitude),
-                                        details))
+        latitude = str(self.selectedCoords.y())
+        longitude = str(self.selectedCoords.x())
+
         ## Get and parse XML
-        tree = ET.parse(urllib2.urlopen(nominatimString))
+        tree = ET.parse(urllib2.urlopen(nominatimString % (latitude, longitude)))
         root = tree.getroot()
-        for node in root.findall('result'):
+        for node in root.findall('result')makes use of:
             adres = node.text
         else:
             for node in root.findall('error'):
@@ -250,43 +245,17 @@ class skob:
         else:
             transportation = 'car'
 
-        ## Tolls and highways if 'car'
-        if self.dlg.checkBox_1.checkState():
-            toll = 'toll=1'
-        else: 
-            toll = 'toll=0'
-        if self.dlg.checkBox_2.checkState():
-            highways = 'highways=1'
-        else:
-            highways = 'highways=0'
-
-        ## Units
-        if self.dlg.radioButton_4.isChecked():
-            self.unit = 'meter'
-            ## Distance value
-            self.dist = self.dlg.spinBox.value()
-        else:
-            self.unit = 'sec'
-            ## Distance value
-            self.dist = self.dlg.spinBox.value()*60       
+        ## Tolls, highways,  if 'car' and units + distance
+        toll = 'toll=1' if self.dlg.checkBox_1.checkState() else 'toll=0'
+        highways = 'highways=1' if self.dlg.checkBox_2.checkState() else 'highways=0'
+        self.unit = 'meter' if self.dlg.radioButton_4.isChecked() else 'sec'
+        self.dist = self.dlg.spinBox.value() if self.dlg.radioButton_4.isChecked() else self.dlg.spinBox.value()*60
 
         startPoint = str(self.selectedCoords.y())+','+str(self.selectedCoords.x())
 
         ## Create URL
-        self.urlWithParams = separator.join((url_skob
-                                             + startPoint,
-                                            transport
-                                            + transportation,
-                                            distance
-                                            + str(self.dist),
-                                            units
-                                            + self.unit,
-                                            toll,
-                                            highways,
-                                            nonReachable,
-                                            response_type))
-
-        self.createURLlist = (self.urlWithParams, self.dist, self.unit)
+        self.createURLlist = (urlWithParams % (startPoint, transportation, str(self.dist), self.unit, toll, highways),
+                             self.dist, self.unit)
         return self.createURLlist
 
     def requestAPI(self):
