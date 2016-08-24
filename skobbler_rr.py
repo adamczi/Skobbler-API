@@ -29,8 +29,9 @@ from skobbler_rr_dialog import skobDialog
 import os.path
 ## Additional
 from utils import *
-import urllib, urllib2, json
-from qgis.core import QgsField, QgsVectorLayer, QgsFeature, QgsGeometry, QgsPoint, QgsMapLayerRegistry, QgsCoordinateReferenceSystem, QgsCoordinateTransform
+from epsg import *
+import urllib2, json
+from qgis.core import QgsField, QgsVectorLayer, QgsFeature, QgsGeometry, QgsPoint, QgsMapLayerRegistry
 from qgis.gui import QgsMapTool, QgsMapCanvas, QgsMapToolEmitPoint, QgsMessageBar
 import xml.etree.ElementTree as ET
 
@@ -54,7 +55,6 @@ class skob:
         self.canvas = self.iface.mapCanvas() 
         self.clickTool = QgsMapToolEmitPoint(self.canvas)
         self.cLayer = None
-        ##
 
         # initialize locale
         locale = QSettings().value('locale/userLocale')[0:2]
@@ -211,12 +211,7 @@ class skob:
         self.selectedCoords = self.pntGeom.asPoint()
         
         ## Reproject if needed
-        currentEPSG = self.canvas.mapRenderer().destinationCrs().authid()
-        if currentEPSG != 'EPSG:4326':
-            crsSrc = QgsCoordinateReferenceSystem(int(currentEPSG[5:]))    # WGS 84
-            crsDest = QgsCoordinateReferenceSystem(4326)
-            xform = QgsCoordinateTransform(crsSrc, crsDest)
-            self.selectedCoords = xform.transform(self.pntGeom.asPoint())
+        EPSG(self)
 
         ## Get geocoded addres 
         latitude = str(self.selectedCoords.y())
@@ -225,7 +220,7 @@ class skob:
         ## Get and parse XML
         tree = ET.parse(urllib2.urlopen(nominatimString % (latitude, longitude)))
         root = tree.getroot()
-        for node in root.findall('result')makes use of:
+        for node in root.findall('result'):
             adres = node.text
         else:
             for node in root.findall('error'):
@@ -262,7 +257,7 @@ class skob:
         """ Send the request """
         queryString, dist, unit = self.createURL()
         ## Get the data
-        response = urllib.urlopen(queryString)
+        response = urllib2.urlopen(queryString)
         data = json.loads(response.read())
         try:
             self.coords = data['realReach']['gpsPoints']
@@ -309,13 +304,10 @@ class skob:
         ## Set clickTool as default method
         self.canvas.setMapTool(self.clickTool)
 
-        self.dlg.checkBox_1.setEnabled(False)
-        self.dlg.checkBox_2.setEnabled(False)
-
-        self.dlg.radioButton_3.toggled.connect(self.checkBoxes)
-
         ## show the dialog
         self.dlg.show()
+
+        self.dlg.radioButton_3.toggled.connect(self.checkBoxes)
 
         ## Run the dialog event loop
         result = self.dlg.exec_()

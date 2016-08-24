@@ -20,7 +20,7 @@ urlWithParams = separator.join((url_skob
                                     'nonReachable=0',
                                     'response_type=gps'))
 
-## This part is for geocoding
+## This part is for Nominatim geocoding
 url_nominatim = 'http://nominatim.openstreetmap.org/reverse?format=xml'
 
 nominatimString = separator.join((url_nominatim,
