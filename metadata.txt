@@ -7,17 +7,17 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Skobbler API
+name=Catchment Area
 qgisMinimumVersion=2.0
-description=This plugin uses Skobbler RealReach API
+description=This plugin uses external APIs to create a shapefile with catchment area
 version=0.1
 author=Adam Borczyk
 email=ad.borczyk@gmail.com
 
-about=This plugin returns RealReach™ catchment based on user input. This is Skobbler feature that shows how far can you get by car, bike or walk within desired minutes or meters.
+about=This plugin returns RealReach™ catchment by Skobbler or Isoline catchment by HERE, based on user input. These are services that shows how far can you get by car, bike or walk within desired minutes or meters. In order to use it, user must provide a valid API key from either of the providers.
 
-tracker=https://github.com/adamczi/Skobbler-API/issues
-repository=https://github.com/adamczi/Skobbler-API
+tracker=https://bitbucket.org/gissupport/qgis_skobbler/issues
+repository=https://bitbucket.org/gissupport/qgis_skobbler/
 # End of mandatory metadata
 
 # Recommended items:
@@ -26,9 +26,9 @@ repository=https://github.com/adamczi/Skobbler-API
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=skobbler, navigation
+tags=skobbler, here, navigation, catchment
 
-homepage=https://github.com/adamczi/Skobbler-API
+homepage=https://bitbucket.org/gissupport/qgis_skobbler
 category=Plugins
 icon=icon.png
 # experimental flag

@@ -3,7 +3,7 @@
 /***************************************************************************
  skobDialog
                                  A QGIS plugin
- This plugin uses Skobbler RealReach API
+ This plugin uses external APIs to create a shapefile with catchment area
                              -------------------
         begin                : 2016-08-10
         git sha              : $Format:%H$
